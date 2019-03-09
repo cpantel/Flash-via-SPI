@@ -66,54 +66,63 @@ int main(void){
          if ( '#' == dato[0] ) {
             gpioWrite( SPI_CS_GPIO0, OFF);  // para iniciar la instruccion
 
-            gpioWrite( SPI_DO_GPIO6, OFF);
 
+            delay(1);
             for (bitcounter = 0; bitcounter < 6; ++bitcounter) {
+           
+              gpioWrite( SPI_DO_GPIO6, OFF);
               delay(1);
               gpioWrite( SPI_CLK_GPIO2, ON );  // bit 7-2 del comando read(0x03)
-              delay(1);
+              delay(2);
               gpioWrite( SPI_CLK_GPIO2, OFF );
+              delay(1);
+
             }
 
             gpioWrite( SPI_DO_GPIO6, ON);
-
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON );  // bit 1 de 0x03
-            delay(1);
+            delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
 
+            gpioWrite( SPI_DO_GPIO6, ON);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON );  // bit 0 de 0x03
-            delay(1);
+            delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
 
-            gpioWrite( SPI_DO_GPIO6, OFF);
 
             for (bitcounter = 0; bitcounter < 21; ++bitcounter) {
+              gpioWrite( SPI_DO_GPIO6, OFF);
               delay(1);
               gpioWrite( SPI_CLK_GPIO2, ON );  // bit 23-3 de la direccion 0x000000000004
-              delay(1);
+              delay(2);
               gpioWrite( SPI_CLK_GPIO2, OFF );
+              delay(1);
             }
 
             gpioWrite( SPI_DO_GPIO6, ON);
-
             delay(1);
-            gpioWrite( SPI_CLK_GPIO2, ON );  // bit 2 de la direccion 0x000000000004
-            delay(1);
+            gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
+            delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
 
             gpioWrite( SPI_DO_GPIO6, OFF);
-
             delay(1);
-            gpioWrite( SPI_CLK_GPIO2, ON );  // bit 1 de la direccion 0x000000000004
-            delay(1);
+            gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
+            delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
 
+            gpioWrite( SPI_DO_GPIO6, OFF);
             delay(1);
-            gpioWrite( SPI_CLK_GPIO2, ON );  // bit 0 de la direccion 0x000000000004
-            delay(1);
+            gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
+            delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
+//            delay(1);
 
 
             for (bytecounter = 0; bytecounter < 7; ++bytecounter) {
@@ -121,9 +130,9 @@ int main(void){
                 mem = gpioRead(SPI_DI_GPIO4); // lectura bit 
                 membuffer[bytecounter] <<= 1;
                 membuffer[bytecounter] |= mem;
-                delay(1);
+                delay(2);
                 gpioWrite(SPI_CLK_GPIO2, ON );  
-                delay(1);
+                delay(2);
                 gpioWrite( SPI_CLK_GPIO2, OFF );
               }
               uartWriteByte(UART_USB, membuffer[bytecounter]);

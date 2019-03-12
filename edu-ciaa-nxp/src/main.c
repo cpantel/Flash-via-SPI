@@ -55,8 +55,8 @@ int main(void){
 
    gpioConfig( SPI_CS_GPIO0,  GPIO_OUTPUT );
    gpioConfig( SPI_CLK_GPIO2, GPIO_OUTPUT );
-   gpioConfig( SPI_DO_GPIO6,  GPIO_OUTPUT );
-   gpioConfig( SPI_DI_GPIO4,  GPIO_INPUT );
+   gpioConfig( SPI_DI_GPIO4,  GPIO_OUTPUT );
+   gpioConfig( SPI_DO_GPIO6,  GPIO_INPUT );
 
    gpioWrite( SPI_CS_GPIO0, ON);
 
@@ -64,13 +64,29 @@ int main(void){
 
       if ( uartReadByte( UART_USB, (uint8_t * )&dato[0] ) ){
          if ( '#' == dato[0] ) {
-            gpioWrite( SPI_CS_GPIO0, OFF);  // para iniciar la instruccion
+
+
+            // one clk cycle
+            delay(1);
+            gpioWrite( SPI_CLK_GPIO2, ON );
+            delay(2);
+            gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
 
 
             delay(1);
+            gpioWrite( SPI_CLK_GPIO2, ON );
+            delay(2);
+            gpioWrite( SPI_CLK_GPIO2, OFF );
+            delay(1);
+
+
+            gpioWrite( SPI_CS_GPIO0, OFF);  // para iniciar la instruccion
+
+
             for (bitcounter = 0; bitcounter < 6; ++bitcounter) {
            
-              gpioWrite( SPI_DO_GPIO6, OFF);
+              gpioWrite( SPI_DI_GPIO4, OFF);
               delay(1);
               gpioWrite( SPI_CLK_GPIO2, ON );  // bit 7-2 del comando read(0x03)
               delay(2);
@@ -79,14 +95,14 @@ int main(void){
 
             }
 
-            gpioWrite( SPI_DO_GPIO6, ON);
+            gpioWrite( SPI_DI_GPIO4, ON);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON );  // bit 1 de 0x03
             delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
             delay(1);
 
-            gpioWrite( SPI_DO_GPIO6, ON);
+            gpioWrite( SPI_DI_GPIO4, ON);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON );  // bit 0 de 0x03
             delay(2);
@@ -95,7 +111,7 @@ int main(void){
 
 
             for (bitcounter = 0; bitcounter < 21; ++bitcounter) {
-              gpioWrite( SPI_DO_GPIO6, OFF);
+              gpioWrite( SPI_DI_GPIO4, OFF);
               delay(1);
               gpioWrite( SPI_CLK_GPIO2, ON );  // bit 23-3 de la direccion 0x000000000004
               delay(2);
@@ -103,21 +119,21 @@ int main(void){
               delay(1);
             }
 
-            gpioWrite( SPI_DO_GPIO6, ON);
+            gpioWrite( SPI_DI_GPIO4, ON);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
             delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
             delay(1);
 
-            gpioWrite( SPI_DO_GPIO6, OFF);
+            gpioWrite( SPI_DI_GPIO4, OFF);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
             delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
             delay(1);
 
-            gpioWrite( SPI_DO_GPIO6, OFF);
+            gpioWrite( SPI_DI_GPIO4, OFF);
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
             delay(2);
@@ -127,15 +143,15 @@ int main(void){
 
             for (bytecounter = 0; bytecounter < 7; ++bytecounter) {
               for (bitcounter = 0; bitcounter < 8; ++bitcounter) {
-                mem = gpioRead(SPI_DI_GPIO4); // lectura bit 
-                membuffer[bytecounter] <<= 1;
-                membuffer[bytecounter] |= mem;
+//                mem = gpioRead(SPI_DO_GPIO6); // lectura bit 
+//                membuffer[bytecounter] <<= 1;
+//                membuffer[bytecounter] |= mem;
                 delay(2);
                 gpioWrite(SPI_CLK_GPIO2, ON );  
                 delay(2);
                 gpioWrite( SPI_CLK_GPIO2, OFF );
               }
-              uartWriteByte(UART_USB, membuffer[bytecounter]);
+//              uartWriteByte(UART_USB, membuffer[bytecounter]);
             }
 
 

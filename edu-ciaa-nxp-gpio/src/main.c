@@ -45,7 +45,7 @@
 #define HALFWORDS     4
 #define BITS          4 
 
-void printAsHexa(char hexbuffer[ROWS * COLS * HALFWORDS]) {
+void printAsHex(char hexbuffer[ROWS * COLS * HALFWORDS]) {
   int col;
   int row;
   int halfword;
@@ -61,7 +61,23 @@ void printAsHexa(char hexbuffer[ROWS * COLS * HALFWORDS]) {
   uartWriteByte(UART_USB,0x0a);
 }
 
-void printAsBinary() {
+void printAsBin(char binbuffer[ROWS * COLS * HALFWORDS * BITS]) {
+  int col;
+  int row;
+  int halfword;
+  int bit;
+  for (row = 0; row < ROWS; ++row) {
+    for (col = 0; col < COLS; ++col) {
+      for (halfword = 0; halfword < HALFWORDS; ++halfword) {
+        for (bit = 0; bit < BITS; ++bit) {
+          uartWriteByte(UART_USB, binbuffer[col * COLS + row * ROWS + halfword * HALFWORDS + bit * BITS]);
+        }
+      }
+      uartWriteByte(UART_USB, ' ');
+    }
+    uartWriteByte(UART_USB,0x0a);
+  }
+  uartWriteByte(UART_USB,0x0a);
 
 }
 
@@ -69,7 +85,8 @@ int main(void){
 
    char dato[] = { 0x0,0x0 };
    char mem;
-   char hexbuffer[ROWS * COLS * HALFWORDS];//  = { 0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0 };
+   char hexbuffer[ROWS * COLS * HALFWORDS];
+   char binbuffer[ROWS * COLS * HALFWORDS * BITS];
 
    int bits;
 
@@ -184,6 +201,10 @@ if ('$' == dato[0] ) {
                               
                     hexbuffer[idx] *= 2;
                     hexbuffer[idx] += mem != 0 ? 1 : 0;
+
+                    binbuffer[idx + bits] = mem != 0 ? '1' : '0';
+
+
                     delay(2);
                     gpioWrite(SPI_CLK_GPIO2, ON );  
                     delay(2);
@@ -203,7 +224,8 @@ if ('$' == dato[0] ) {
             gpioWrite( SPI_CS_GPIO0, ON);   // para finalizar la instruccion
         }
          //uartWriteByte( UART_232, dato[0] );
-        printAsHexa(hexbuffer);
+        printAsHex(hexbuffer);
+        printAsBin(binbuffer);
       }
 
       if(  uartReadByte( UART_232, (uint8_t * )&dato[0] ) ){

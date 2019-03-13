@@ -38,14 +38,40 @@
 #define SPI_CLK_GPIO2 GPIO2
 #define SPI_DI_GPIO4  GPIO4
 #define SPI_DO_GPIO6  GPIO6
+
+
+#define ROWS          4
+#define COLS          8
+#define HALFWORDS     4
+#define BITS          4 
+
+void printAsHexa(char hexbuffer[ROWS * COLS * HALFWORDS]) {
+  int col;
+  int row;
+  int halfword;
+  for (row = 0; row < ROWS; ++row) {
+    for (col = 0; col < COLS; ++col) {
+      for (halfword = 0; halfword < HALFWORDS; ++halfword) {
+        uartWriteByte(UART_USB, hexbuffer[col * COLS + row * ROWS + halfword * HALFWORDS]);
+      }
+      uartWriteByte(UART_USB, ' ');
+    }
+    uartWriteByte(UART_USB,0x0a);
+  }
+  uartWriteByte(UART_USB,0x0a);
+}
+
+void printAsBinary() {
+
+}
+
 int main(void){
 
    char dato[] = { 0x0,0x0 };
    char mem;
-   char membuffer[]  = { 0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0 };
+   char hexbuffer[ROWS * COLS * HALFWORDS];//  = { 0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0 };
 
-   int bitcounter;
-   int bytecounter;
+   int bits;
 
    boardConfig();
 
@@ -63,7 +89,7 @@ int main(void){
    while(1) {
 
       if ( uartReadByte( UART_USB, (uint8_t * )&dato[0] ) ){
-         if ( '#' == dato[0] ) {
+         if ( '#' == dato[0]  || '$' == dato[0] ) {
 
 
             // one clk cycle
@@ -84,7 +110,7 @@ int main(void){
             gpioWrite( SPI_CS_GPIO0, OFF);  // para iniciar la instruccion
 
 
-            for (bitcounter = 0; bitcounter < 6; ++bitcounter) {
+            for (bits = 0; bits < 6; ++bits) {
            
               gpioWrite( SPI_DI_GPIO4, OFF);
               delay(1);
@@ -110,7 +136,7 @@ int main(void){
             delay(1);
 
 
-            for (bitcounter = 0; bitcounter < 21; ++bitcounter) {
+            for (bits = 0; bits < 21; ++bits) {
               gpioWrite( SPI_DI_GPIO4, OFF);
               delay(1);
               gpioWrite( SPI_CLK_GPIO2, ON );  // bit 23-3 de la direccion 0x000000000004
@@ -125,8 +151,13 @@ int main(void){
             delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
             delay(1);
-
+if ('$' == dato[0] ) {
+            gpioWrite( SPI_DI_GPIO4, ON);
+} else {
             gpioWrite( SPI_DI_GPIO4, OFF);
+}
+
+
             delay(1);
             gpioWrite( SPI_CLK_GPIO2, ON ); // bit 2 de la direccion 0x000000000004
             delay(2);
@@ -139,33 +170,49 @@ int main(void){
             delay(2);
             gpioWrite( SPI_CLK_GPIO2, OFF );
 //            delay(1);
-
-
-            for (bytecounter = 0; bytecounter < 7; ++bytecounter) {
-              for (bitcounter = 0; bitcounter < 8; ++bitcounter) {
-//                mem = gpioRead(SPI_DO_GPIO6); // lectura bit 
-//                membuffer[bytecounter] <<= 1;
-//                membuffer[bytecounter] |= mem;
-                delay(2);
-                gpioWrite(SPI_CLK_GPIO2, ON );  
-                delay(2);
-                gpioWrite( SPI_CLK_GPIO2, OFF );
+            int col;
+            int row;
+            int halfword;
+            int bits; 
+            for (row = 0; row < ROWS; ++row) {
+              for (col = 0; col < COLS; ++col) {
+                for (halfword = 0; halfword < HALFWORDS; ++halfword) {
+                  int idx = col * COLS + row * ROWS + halfword * HALFWORDS;
+                  hexbuffer[idx] = 0;
+                  for (bits = 0; bits < BITS; ++bits) {
+                    mem = gpioRead(SPI_DO_GPIO6); // lectura bit 
+                              
+                    hexbuffer[idx] *= 2;
+                    hexbuffer[idx] += mem != 0 ? 1 : 0;
+                    delay(2);
+                    gpioWrite(SPI_CLK_GPIO2, ON );  
+                    delay(2);
+                    gpioWrite( SPI_CLK_GPIO2, OFF );
+                  }
+           
+                  hexbuffer[idx] += ( (hexbuffer[idx] > 10) ? 65 : 48 );
+              
+//                  uartWriteByte(UART_USB,hexbuffer[idx]);
+//              uartWriteByte(UART_USB, hexbuffer[halfword]);
+                }
+//              uartWriteByte(UART_USB, ' ');
               }
-//              uartWriteByte(UART_USB, membuffer[bytecounter]);
+//              uartWriteByte(UART_USB,0x0a);
             }
-
-
             delay(1);
             gpioWrite( SPI_CS_GPIO0, ON);   // para finalizar la instruccion
-
-         }
-         uartWriteByte( UART_232, dato[0] );
+        }
+         //uartWriteByte( UART_232, dato[0] );
+        printAsHexa(hexbuffer);
       }
 
       if(  uartReadByte( UART_232, (uint8_t * )&dato[0] ) ){
          uartWriteByte( UART_USB, dato[0] );
       }
+
+  
    }
    return 0 ;
 }
+
 

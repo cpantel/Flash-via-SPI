@@ -87,7 +87,7 @@ int main(void){
    char mem;
    char hexbuffer[ROWS * COLS * HALFWORDS];
    char binbuffer[ROWS * COLS * HALFWORDS * BITS];
-
+   char initMsg[] = "Init\n\0";
    int bits;
 
    boardConfig();
@@ -100,6 +100,8 @@ int main(void){
    gpioConfig( SPI_CLK_GPIO2, GPIO_OUTPUT );
    gpioConfig( SPI_DI_GPIO4,  GPIO_OUTPUT );
    gpioConfig( SPI_DO_GPIO6,  GPIO_INPUT );
+
+   uartWriteString(UART_USB, initMsg);
 
    gpioWrite( SPI_CS_GPIO0, ON);
 
@@ -211,7 +213,7 @@ if ('$' == dato[0] ) {
                     gpioWrite( SPI_CLK_GPIO2, OFF );
                   }
            
-                  hexbuffer[idx] += ( (hexbuffer[idx] > 10) ? 65 : 48 );
+                  hexbuffer[idx] += ( (hexbuffer[idx] > 9) ? 55 : 48 );
               
 //                  uartWriteByte(UART_USB,hexbuffer[idx]);
 //              uartWriteByte(UART_USB, hexbuffer[halfword]);
@@ -225,7 +227,7 @@ if ('$' == dato[0] ) {
         }
          //uartWriteByte( UART_232, dato[0] );
         printAsHex(hexbuffer);
-        printAsBin(binbuffer);
+//        printAsBin(binbuffer);
       }
 
       if(  uartReadByte( UART_232, (uint8_t * )&dato[0] ) ){
